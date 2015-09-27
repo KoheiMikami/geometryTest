@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>GeometryTest</title>
+</head>
+
+<body>
+
+  <div id="stage"></div>
+  <script src="three.min.js"></script>
+
+  <script>
+    (function() {
+      var width = 960;
+      var height = 540;
+
+      var randPosXArr = [],
+        randPosYArr = [];
+      for (var i = 0; i < 5; i++) {
+        randPosXArr[i] = (Math.random() * ((width / 2 + 1) - (-width / 2))) + (-width / 2);
+        randPosYArr[i] = (Math.random() * ((height / 2 + 1) - (-height / 2))) + (-height / 2);
+      }
+      var targetList = [];
+
+      //scene
+      var scene = new THREE.Scene();
+
+      //AxisHelper
+      var axis = new THREE.AxisHelper(1000);
+      scene.add(axis);
+      axis.position.set(0, 0, 0);
+
+      //cube
+      var geometry = new THREE.CubeGeometry(50, 50, 50);
+      var material = new THREE.MeshLambertMaterial({
+        color: 0xff0000
+      });
+      var cube = new THREE.Mesh(geometry, material);
+      cube.position.set(randPosXArr[0], randPosYArr[0], 0);
+      cube.name = "cube";
+      scene.add(cube);
+      targetList.push(cube);
+
+      //sphere
+      var sphereGeometry = new THREE.SphereGeometry(30);
+      var sphereMaterial = new THREE.MeshLambertMaterial({
+        color: 0x0000ff
+      });
+      var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      sphere.position.set(randPosXArr[1], randPosYArr[1], 30);
+      sphere.name = "sphere"
+      scene.add(sphere);
+      targetList.push(sphere);
+
+      //octahedron
+      var octahedronGeometry = new THREE.OctahedronGeometry(30);
+      var octahedronMaterial = new THREE.MeshLambertMaterial({
+        color: 0x00FF00
+      });
+      var octahedron = new THREE.Mesh(octahedronGeometry, octahedronMaterial);
+      octahedron.position.set(randPosXArr[2], randPosYArr[2], 30);
+      octahedron.name = "octahedron";
+      scene.add(octahedron);
+      targetList.push(octahedron);
+
+      //tetrahedron
+      var tetrahedronGeometry = new THREE.TetrahedronGeometry(30);
+      var tetrahedronMaterial = new THREE.MeshLambertMaterial({
+        color: 0x00FFFF
+      });
+      var tetrahedron = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
+      tetrahedron.position.set(randPosXArr[3], randPosYArr[3], 30);
+      tetrahedron.name = "tetrahedron";
+      scene.add(tetrahedron);
+      targetList.push(tetrahedron);
+
+      //torus
+      var torusGeometry = new THREE.TorusGeometry(30);
+      var torusMaterial = new THREE.MeshLambertMaterial({
+        color: 0x800000
+      });
+      var torus = new THREE.Mesh(torusGeometry, torusMaterial);
+      torus.position.set(randPosXArr[4], randPosYArr[4], 30);
+      torus.name = "torus";
+      scene.add(torus);
+      targetList.push(torus);
+
+      //light
+      var light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(0, 100, 30);
+      scene.add(light);
+      var ambient = new THREE.AmbientLight(0x550000);
+      scene.add(ambient);
+
+      //camera
+      var camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
+      camera.position.set(50, 100, 800);
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+      //rendering
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(width, height);
+      renderer.setClearColor(0xeeeeee, 1);
+      document.getElementById('stage').appendChild(renderer.domElement);
+
+      function render() {
+        requestAnimationFrame(render);
+        cube.rotation.y += 1 * Math.PI / 180;
+        sphere.rotation.y += 1 * Math.PI / 180;
+        octahedron.rotation.y += 1 * Math.PI / 180;
+        tetrahedron.rotation.y += 1 * Math.PI / 180;
+        renderer.render(scene, camera);
+      }
+      render();
+
+      var projector = new THREE.Projector();
+      stage.onmousedown = function(ev) {
+        var rect = ev.target.getBoundingClientRect();
+
+        //スクリーン上のマウスの値を取得
+        var mouseX = ev.clientX - rect.left;
+        var mouseY = ev.clientY - rect.top;
+
+        //-1から1に値を正規化
+        mouseX = (mouseX / width) * 2 - 1;
+        mouseY = -(mouseY / height) * 2 + 1;
+
+        //マウスのベクトル
+        var vector = new THREE.Vector3(mouseX, mouseY, 1);
+
+        //vectorはスクリーン座標系なので, オブジェクトの座標系に変換
+        vector.unproject(camera);
+
+        //始点, 向きベクトルを渡してレイを作成
+        var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+        //マウスとの判定
+        var obj = ray.intersectObjects(targetList);
+
+        if (obj.length > 0) {
+          alert(obj[0].object.name);
+        }
+      }
+
+    })();
+  </script>
+
+</body>
+
+</html>
